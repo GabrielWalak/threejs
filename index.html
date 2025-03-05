@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Układ Słoneczny</title>
+  <style>
+    body {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  
+  <script type="module">
+  import * as THREE from "/node_modules/three/build/three.module.js";
+  import { OrbitControls } from "/node_modules/three/examples/jsm/controls/OrbitControls.js";
+  import { EffectComposer } from "/node_modules/three/examples/jsm/postprocessing/EffectComposer.js";
+  import { RenderPass } from "/node_modules/three/examples/jsm/postprocessing/RenderPass.js";
+  import { UnrealBloomPass } from "/node_modules/three/examples/jsm/postprocessing/UnrealBloomPass.js";
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(75,window.innerWidth / window.innerHeight, 0.1, 550000);
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+   
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.far=50000;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.needsUpdate=true;
+     //camera.far = 55000;
+    //camera.updateProjectionMatrix(); 
+      const renderScene = new RenderPass(scene, camera);
+      const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+      bloomPass.threshold = 0;
+      bloomPass.strength = 1.6;
+      bloomPass.radius = 1;
+
+      const composer = new EffectComposer(renderer);
+      composer.addPass(renderScene);
+      composer.addPass(bloomPass);
+
+      document.body.appendChild(renderer.domElement);
+   
+       var light = new THREE.PointLight(0xffffff, 10,55000);
+      light.position.set(0, 0, 0);
+      light.castShadow = true;
+      light.decay=0.25;
+      //light.shadowCameraNear = 0.1;
+      //light.shadowCameraFar = 50000;
+      light.shadow.mapSize.set(8192,8192);
+      light.shadow.bias = - 0.002;
+      light.shadow.camera.near = 0.00001;
+      light.shadow.camera.far = 55000;
+      //light.shadowCameraVisible = true;
+    
+      scene.add(light);
+  
+
+     function rotateObject(object, axis, radians) {
+  const rotObjectMatrix = new THREE.Matrix4();
+  rotObjectMatrix.makeRotationAxis(axis.normalize(), radians);
+  object.matrix.multiply(rotObjectMatrix);
+  object.rotation.setFromRotationMatrix(object.matrix);
+}
+    var objects = new THREE.Group();
+
+      const color = new THREE.Color("#FDB813");
+      const geometry = new THREE.IcosahedronGeometry(70, 5);
+      const material = new THREE.MeshBasicMaterial({ color: color });
+      var sun = new THREE.Mesh(geometry, material);
+
+      objects.add(sun);
+
+      // Planeta 1 - Merkury
+      var mercuryTexture = new THREE.TextureLoader().load('pic/mercury.jpg');
+      var mercuryMaterial = new THREE.MeshStandardMaterial({ map: mercuryTexture });
+      var mercury = new THREE.Mesh(new THREE.SphereGeometry(0.25, 32, 32), mercuryMaterial);
+      mercury.castShadow = true;
+      mercury.receiveShadow = true;
+   
+      objects.add(mercury);
+     
+      // Planeta 2 - Wenus
+      var venusTexture = new THREE.TextureLoader().load('pic/venus.jpg');
+      var venusMaterial = new THREE.MeshPhongMaterial({ map: venusTexture });
+      var venus = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32), venusMaterial);
+      venus.castShadow = true;
+      venus.receiveShadow = true;
+  
+      objects.add(venus);
+//earth moon clouds
+
+
+          var earthgeo = new THREE.SphereGeometry(0.637, 32, 32);
+    var loader = new THREE.TextureLoader();
+    var earthMaterial = new THREE.MeshPhongMaterial({
+      map: loader.load("pic/earthmap1.jpg"),
+      bumpMap: loader.load("pic/bump.jpg"),
+      bumpScale: 28,
+    });
+      //earthMesh
+      var earth = new THREE.Mesh(earthgeo, earthMaterial);
+      earth.castShadow = true;
+      earth.receiveShadow = true; 
+      objects.add(earth);
+
+
+      //cloud geometry
+      const cloudgeometry = new THREE.SphereGeometry(0.641, 32, 32);
+      const cloudMaterial = new THREE.MeshPhongMaterial({
+        map: loader.load("pic/earthCloud.png"),
+        transparent: true,
+      });
+
+
+      // Cloud Mesh
+      var cloud = new THREE.Mesh(cloudgeometry, cloudMaterial);
+    
+      cloud.castShadow = true;
+      cloud.receiveShadow = true;
+      objects.add(cloud);
+
+      // Księżyc
+      var moonTexture = new THREE.TextureLoader().load('pic/moon.jpg');
+      var moonMaterial = new THREE.MeshPhongMaterial({ map: moonTexture, side: THREE.DoubleSide }); // Ustawienie dwustronnej tekstury
+      var moon = new THREE.Mesh(new THREE.SphereGeometry(0.1737, 32, 32), moonMaterial);
+      moon.castShadow = true;
+      moon.receiveShadow = true;
+
+      earth.add(moon);
+    
+
+      // Planeta 4 - Mars
+      var marsTexture = new THREE.TextureLoader().load('pic/mars.jpg');
+      var marsMaterial = new THREE.MeshStandardMaterial({ map: marsTexture });
+      var mars = new THREE.Mesh(new THREE.SphereGeometry(0.334, 32, 32), marsMaterial);
+      mars.castShadow = true;
+      mars.receiveShadow = true;
+      objects.add(mars);
+      // Księżyce dla Marsa
+      var moon1Texture = new THREE.TextureLoader().load('pic/moon.jpg');
+      var moon1Material = new THREE.MeshStandardMaterial({ map: moon1Texture });
+      var moon1 = new THREE.Mesh(new THREE.SphereGeometry(0.0011, 32, 32), moon1Material);
+      moon1.castShadow = true;
+      moon1.receiveShadow = true;
+
+
+      var moon2Texture = new THREE.TextureLoader().load('pic/moon.jpg');
+      var moon2Material = new THREE.MeshStandardMaterial({ map: moon2Texture });
+      var moon2 = new THREE.Mesh(new THREE.SphereGeometry(0.0006, 32, 32), moon2Material);
+      moon2.castShadow = true;
+      moon2.receiveShadow = true;      
+      mars.add(moon1);
+      mars.add(moon2);
+
+      // Planeta 5 - Jowisz
+      var jupiterTexture = new THREE.TextureLoader().load('pic/jupiter.jpg');
+      var jupiterMaterial = new THREE.MeshPhongMaterial({ map: jupiterTexture });
+      var jupiter = new THREE.Mesh(new THREE.SphereGeometry(7.0, 32, 32), jupiterMaterial);
+      jupiter.castShadow = true;
+      jupiter.receiveShadow = true;
+
+      // Tworzenie księżyców dla Jowisza
+      var moon4Texture = new THREE.TextureLoader().load('pic/moon.jpeg');
+      var moon4Material = new THREE.MeshStandardMaterial({ map: moon4Texture });
+      var moon4 = new THREE.Mesh(new THREE.SphereGeometry(0.18, 32, 32), moon4Material);
+      moon4.castShadow = true;
+      moon4.receiveShadow = true;
+      jupiter.add(moon4);
+
+      var moon5Texture = new THREE.TextureLoader().load('pic/europa.jpeg');
+      var moon5Material = new THREE.MeshStandardMaterial({ map: moon5Texture });
+      var moon5 = new THREE.Mesh(new THREE.SphereGeometry(0.156, 32, 32), moon5Material);
+      moon5.castShadow = true;
+      moon5.receiveShadow = true;
+      jupiter.add(moon5);
+
+      var moon6Texture = new THREE.TextureLoader().load('pic/Ganimedes.jpeg');
+      var moon6Material = new THREE.MeshStandardMaterial({ map: moon6Texture });
+      var moon6 = new THREE.Mesh(new THREE.SphereGeometry(0.26, 32, 32), moon6Material);
+      moon6.castShadow = true;
+      moon6.receiveShadow = true;
+      jupiter.add(moon6);
+
+      var moon7Texture = new THREE.TextureLoader().load('pic/kalisto.jpeg');
+      var moon7Material = new THREE.MeshStandardMaterial({ map: moon7Texture });
+      var moon7 = new THREE.Mesh(new THREE.SphereGeometry(0.24, 32, 32), moon7Material);
+      moon7.castShadow = true;
+      moon7.receiveShadow = true;
+      jupiter.add(moon7);
+
+      objects.add(jupiter);
+
+
+      // Planeta 6 - Saturn
+      var saturnTexture = new THREE.TextureLoader().load('pic/saturn.jpg');
+      var saturnMaterial = new THREE.MeshPhongMaterial({ map: saturnTexture });
+      var saturn = new THREE.Mesh(new THREE.SphereGeometry(5.8, 32, 32), saturnMaterial);
+      saturn.castShadow = true;
+      saturn.receiveShadow = true;
+  
+      const tiltAngleSaturn = -Math.PI / 4;
+      rotateObject(saturn, new THREE.Vector3(1, 0, 0), tiltAngleSaturn);
+      objects.add(saturn);
+
+      var ringsTexture = new THREE.TextureLoader().load('pic/ring.png');
+      ringsTexture.rotation = Math.PI / 2; // Rotate the texture
+      var ringGeometry = new THREE.TorusGeometry(8, 1, 2, 111);
+      ringGeometry.rotateX(Math.PI / 2); // Rotate the UV coordinates
+
+      var ringMesh = new THREE.Mesh(
+        ringGeometry,
+        new THREE.MeshPhongMaterial({ map: ringsTexture })
+      );
+    
+
+      saturn.add(ringMesh); // Add the ring mesh to the saturn object
+
+        // Moons of Saturn
+      var moon8Texture = new THREE.TextureLoader().load('pic/tytan.jpeg');
+      var moon8Material = new THREE.MeshStandardMaterial({ map: moon8Texture });
+      var moon8 = new THREE.Mesh(new THREE.SphereGeometry(0.26, 32, 32), moon8Material);
+
+      var moon9Texture = new THREE.TextureLoader().load('pic/rhea.jpeg');
+      var moon9Material = new THREE.MeshStandardMaterial({ map: moon9Texture });
+      var moon9 = new THREE.Mesh(new THREE.SphereGeometry(0.04, 32, 32), moon9Material);
+      moon9.castShadow = true;
+      moon9.receiveShadow = true;
+
+      var moon10Texture = new THREE.TextureLoader().load('pic/dione.jpeg');
+      var moon10Material = new THREE.MeshStandardMaterial({ map: moon10Texture });
+      var moon10 = new THREE.Mesh(new THREE.SphereGeometry(0.03, 32, 32), moon10Material);
+      moon10.castShadow = true;
+      moon10.receiveShadow = true;
+
+      saturn.add(moon8);
+      saturn.add(moon9);
+      saturn.add(moon10);
+
+  
+      // Planeta 7 - Uran
+      var uranusTexture = new THREE.TextureLoader().load('pic/uran.jpg');
+      var uranusMaterial = new THREE.MeshPhongMaterial({ map: uranusTexture });
+      var uranus = new THREE.Mesh(new THREE.SphereGeometry(2.5, 32, 32), uranusMaterial);
+      uranus.castShadow = true;
+      uranus.receiveShadow = true;
+      objects.add(uranus);
+
+      // Moons of Uranus
+      var moon11Texture = new THREE.TextureLoader().load('pic/umbiel.jpeg');
+      var moon11Material = new THREE.MeshStandardMaterial({ map: moon11Texture });
+      var moon11 = new THREE.Mesh(new THREE.SphereGeometry(0.06, 32, 32), moon11Material);
+      moon11.castShadow = true;
+      moon11.receiveShadow = true;
+
+      var moon12Texture = new THREE.TextureLoader().load('pic/oberon.jpeg');
+      var moon12Material = new THREE.MeshStandardMaterial({ map: moon12Texture });
+      var moon12 = new THREE.Mesh(new THREE.SphereGeometry(0.075, 32, 32), moon12Material);
+      moon12.castShadow = true;
+      moon12.receiveShadow = true;
+
+      var moon13Texture = new THREE.TextureLoader().load('pic/titania.jpeg');
+      var moon13Material = new THREE.MeshStandardMaterial({ map: moon13Texture });
+      var moon13 = new THREE.Mesh(new THREE.SphereGeometry(0.08, 32, 32), moon13Material);
+      moon13.castShadow = true;
+      moon13.receiveShadow = true;
+
+      uranus.add(moon11);
+      uranus.add(moon12);
+      uranus.add(moon13);
+
+      // Planeta 8 - Neptun
+      var neptuneTexture = new THREE.TextureLoader().load('pic/neptune.jpg');
+      var neptuneMaterial = new THREE.MeshPhongMaterial({ map: neptuneTexture });
+      var neptune = new THREE.Mesh(new THREE.SphereGeometry(2.5, 32, 32), neptuneMaterial);
+      neptune.castShadow = true;
+      neptune.receiveShadow = true;
+      objects.add(neptune);
+      // Moons of Neptune
+      var moon14Texture = new THREE.TextureLoader().load('pic/triton.jpeg');
+      var moon14Material = new THREE.MeshStandardMaterial({ map: moon14Texture });
+      var moon14 = new THREE.Mesh(new THREE.SphereGeometry(0.135, 32, 32), moon14Material);
+      moon14.castShadow = true;
+      moon14.receiveShadow = true;
+
+      var moon15Texture = new THREE.TextureLoader().load('pic/moon.jpg');
+      var moon15Material = new THREE.MeshStandardMaterial({ map: moon15Texture });
+      var moon15 = new THREE.Mesh(new THREE.SphereGeometry(0.021, 32, 32), moon15Material);
+      moon15.castShadow = true;
+      moon15.receiveShadow = true;
+
+      var moon16Texture = new THREE.TextureLoader().load('pic/moon.jpg');
+      var moon16Material = new THREE.MeshStandardMaterial({ map: moon16Texture });
+      var moon16 = new THREE.Mesh(new THREE.SphereGeometry(0.00106, 32, 32), moon16Material);
+      moon16.castShadow = true;
+      moon16.receiveShadow = true;
+
+      neptune.add(moon14);
+      neptune.add(moon15);
+      neptune.add(moon16);
+
+      var backgroundTexture = new THREE.TextureLoader().load('pic/space.jpg');
+      scene.background = backgroundTexture;
+
+      scene.add(objects);
+
+    function createHiddenOrbit(radius) {
+      const material = new THREE.LineBasicMaterial({ color: 0xffffff, visible: false });
+      const geometry = new THREE.CircleGeometry(radius, 64);
+      const orbit = new THREE.Line(geometry, material);
+      orbit.rotation.x = -Math.PI / 2;
+      return orbit;
+    }
+
+function orbitAroundPoint(object, center, distance, angle, orbitSpeed) {
+  const x = distance * Math.cos(angle);
+  const z =  distance * Math.sin(angle);
+
+    object.position.set(x, object.position.y, z);
+    
+    moonOrbit.position.set(earth.position.x, earth.position.y, earth.position.z);
+    moon1Orbit.position.set(mars.position.x, mars.position.y, mars.position.z);
+    moon2Orbit.position.set(mars.position.x, mars.position.y, mars.position.z);
+    moon4Orbit.position.set(jupiter.position.x, jupiter.position.y, jupiter.position.z);
+    moon6Orbit.position.set(jupiter.position.x, jupiter.position.y, jupiter.position.z);
+    moon7Orbit.position.set(jupiter.position.x, jupiter.position.y, jupiter.position.z);
+    moon8Orbit.position.set(jupiter.position.x, jupiter.position.y, jupiter.position.z);//jowisz
+    moon11Orbit.position.set(uranus.position.x, uranus.position.y, uranus.position.z);
+    moon12Orbit.position.set(uranus.position.x, uranus.position.y, uranus.position.z);
+    moon13Orbit.position.set(uranus.position.x, uranus.position.y, uranus.position.z);
+    moon14Orbit.position.set(neptune.position.x, neptune.position.y, neptune.position.z);
+    moon15Orbit.position.set(neptune.position.x, neptune.position.y, neptune.position.z);
+    moon16Orbit.position.set(neptune.position.x, neptune.position.y, neptune.position.z);
+    rotateObject(object, new THREE.Vector3(0, 1, 0), orbitSpeed);
+ 
+}
+function resetCamera() {
+  controls.target.set(0, 0, 0); // Ustaw docelowe położenie kamery na punkt (0, 0, 0
+  camera.position.set(0, 60, 200); // Ustaw pozycję kamery
+  const target = new THREE.Vector3().copy(sun.mesh.position);
+  camera.lookAt(target);
+  controls.update(); // Zaktualizuj kontroler kamery
+  
+}
+
+function zoomToPlanet(planetNumber) {
+  const planet = planets[planetNumber];
+  if (planet) {
+    const target = new THREE.Vector3().copy(planet.mesh.position);
+    const distance = Math.max(planet.mesh.geometry.parameters.radius*5, 11);
+    camera.position.copy(target).add(new THREE.Vector3(distance, 0, distance));
+    controls.target.copy(target);
+  }
+}
+
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.update();
+     
+    // Tworzenie orbit dla planet
+    var mercuryOrbit = createHiddenOrbit(570);
+    var venusOrbit = createHiddenOrbit(1080);
+    var earthOrbit = createHiddenOrbit(1500);
+    var marsOrbit = createHiddenOrbit(2280);
+    var jupiterOrbit = createHiddenOrbit(7700);
+    var saturnOrbit = createHiddenOrbit(14200);
+    var uranusOrbit = createHiddenOrbit(28700);
+    var neptuneOrbit = createHiddenOrbit(45000);
+    var moonOrbit = createHiddenOrbit(1);
+    var moon1Orbit = createHiddenOrbit(0.5);
+    var moon2Orbit = createHiddenOrbit(0.8); 
+    // Dodanie orbit do sceny
+    scene.add(mercuryOrbit);
+    scene.add(venusOrbit);
+    scene.add(earthOrbit);
+    scene.add(marsOrbit);
+    scene.add(jupiterOrbit);
+    scene.add(saturnOrbit);
+    scene.add(uranusOrbit);
+    scene.add(neptuneOrbit);
+    scene.add(moonOrbit);
+    scene.add(moon1Orbit);
+    scene.add(moon2Orbit);
+
+    var moon4Orbit = createHiddenOrbit(7.5);
+    var moon5Orbit = createHiddenOrbit(8);
+    var moon6Orbit = createHiddenOrbit(8.3);
+    var moon7Orbit = createHiddenOrbit(8.6); 
+
+    scene.add(moon4Orbit);
+    scene.add(moon5Orbit);
+    scene.add(moon6Orbit);
+    scene.add(moon7Orbit);
+
+
+    var moon8Orbit = createHiddenOrbit(10); 
+    rotateObject(moon8Orbit, new THREE.Vector3(1, 0, 0), -tiltAngleSaturn); 
+    var moon9Orbit = createHiddenOrbit(10.5); 
+    rotateObject(moon9Orbit, new THREE.Vector3(1, 0, 0), -tiltAngleSaturn); 
+    var moon10Orbit = createHiddenOrbit(11); 
+    rotateObject(moon10Orbit, new THREE.Vector3(1, 0, 0), -tiltAngleSaturn); 
+    scene.add(moon8Orbit);
+    scene.add(moon9Orbit);
+    scene.add(moon10Orbit);
+
+    // Neptuna
+    var moon11Orbit = createHiddenOrbit(3); 
+    var moon12Orbit = createHiddenOrbit(3.5); 
+    var moon13Orbit = createHiddenOrbit(4); 
+    scene.add(moon11Orbit);
+    scene.add(moon12Orbit);
+    scene.add(moon13Orbit);
+
+    // Urana
+    var moon14Orbit = createHiddenOrbit(3);
+    var moon15Orbit = createHiddenOrbit(3.5);
+    var moon16Orbit = createHiddenOrbit(4); 
+    scene.add(moon14Orbit);
+    scene.add(moon15Orbit);
+    scene.add(moon16Orbit);
+
+    camera.position.z = 180;
+    camera.position.y=20;
+
+    const planets = [
+  { mesh: sun, orbit: null, speed: 0 },
+  { mesh: mercury, orbit: mercuryOrbit, speed: 47.87, orbitSpeed: 0.11 },
+  { mesh: venus, orbit: venusOrbit, speed: 35.02, orbitSpeed: 0.01 },
+  { mesh: earth, orbit: earthOrbit, speed: 29.78, orbitSpeed: 0.04 },
+  { mesh: mars, orbit: marsOrbit, speed: 24.07, orbitSpeed: 0.025, moons: [moon1, moon2] },
+  { mesh: jupiter, orbit: jupiterOrbit, speed: 13.07, orbitSpeed: 0.05 },
+  { mesh: saturn, orbit: saturnOrbit, speed: 9.68, orbitSpeed: 0.1 },
+  { mesh: uranus, orbit: uranusOrbit, speed: 6.81, orbitSpeed: 0.026 },
+  { mesh: neptune, orbit: neptuneOrbit, speed: 5.43, orbitSpeed: 0.054 },
+  { mesh: moon, orbit: moonOrbit, speed: 500, orbitSpeed: 0.3 },
+  { mesh: moon1, orbit: moon1Orbit, speed: 500, orbitSpeed: 3 },
+  { mesh: moon2, orbit: moon2Orbit, speed: 500, orbitSpeed: 2 },
+  { mesh: moon4, orbit: moon4Orbit, speed: 300, orbitSpeed: 1 },
+  { mesh: moon5, orbit: moon5Orbit, speed: 400, orbitSpeed: 2 },
+  { mesh: moon6, orbit: moon6Orbit, speed: 300, orbitSpeed: 3 },
+  { mesh: moon7, orbit: moon7Orbit, speed: 2050, orbitSpeed: 1 },
+  { mesh: moon8, orbit: moon8Orbit, speed: 3500, orbitSpeed: 2 },
+  { mesh: moon9, orbit: moon9Orbit, speed: 1050, orbitSpeed: 2 },
+  { mesh: moon10, orbit: moon10Orbit, speed: 2000, orbitSpeed: 1 },
+  { mesh: moon11, orbit: moon11Orbit, speed: 2000, orbitSpeed: 3 },
+  { mesh: moon12, orbit: moon12Orbit, speed: 4000, orbitSpeed: 2 },
+  { mesh: moon13, orbit: moon13Orbit, speed: 3000, orbitSpeed: 1 },
+  { mesh: moon14, orbit: moon14Orbit, speed: 3500, orbitSpeed: 2 },
+  { mesh: moon15, orbit: moon15Orbit, speed: 2000, orbitSpeed: 2 },
+  { mesh: moon16, orbit: moon16Orbit, speed: 2050, orbitSpeed: 1 }
+];
+
+let stopRotation = false;
+
+function stopPlanetRotation() {
+  stopRotation = !stopRotation;
+}
+function animate() {
+  requestAnimationFrame(animate);
+  const time = Date.now() * 0.00000001;
+
+  planets.forEach(planet => {
+    const { mesh, orbit, speed, orbitSpeed } = planet;
+
+    if (orbit && !stopRotation) {
+      orbitAroundPoint(mesh, new THREE.Vector3(0, 0, 0), orbit.geometry.parameters.radius, (time * speed) / 10, orbitSpeed / 10);
+
+      if (mesh.userData.selected) {
+        const target = new THREE.Vector3().copy(mesh.position);
+        camera.lookAt(target);
+        controls.target.copy(target);
+      }
+    }
+  });
+
+  const cloudRotationSpeed = 0.001;
+  cloud.rotation.y += cloudRotationSpeed;
+  cloud.position.copy(earth.position);
+
+  controls.update();
+  composer.render();
+
+}
+
+
+window.addEventListener('keydown', (event) => {
+  switch (event.key) {
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+      zoomToPlanet(parseInt(event.key));
+      selectPlanet(parseInt(event.key));
+      break;
+    case '0':
+      resetCamera();
+      break;
+      case ' ': 
+      stopPlanetRotation();
+      break;
+  }
+});
+
+
+function selectPlanet(planetNumber) {
+  planets.forEach((planet, index) => {
+    if (index === planetNumber) {
+  
+      planet.mesh.userData.selected = true;
+    } else if (planetNumber === "sun" && planet.mesh.userData.selected) {
+ 
+      planet.mesh.userData.selected = false;
+    } else {
+   
+      planet.mesh.userData.selected = false;
+    }
+  });
+}
+
+
+      animate();
+//po zmianie wielkośći orbit na takie wartości jakie są teraz wcześcniej 100 razy mniejsze księżyce przestały rzucać cienie na planety co mam zmienić aby to naprawić
+
+    </script>
